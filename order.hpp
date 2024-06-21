@@ -116,15 +116,14 @@ public:
         }
         std::vector<Node> centroids; 
         unsigned num_clusters = this->graph->cluster_num;
-        printf("分类数量 = %d\n", num_clusters);
         std::vector<std::vector<Node>> clusters(num_clusters); 
 
         /* KMeans++ */
         int first_center_id = rand() % nodes.size();
         centroids.push_back(nodes[first_center_id]);
         for(unsigned i = 1; i < num_clusters;i++){
-            if(i % 10  == 0)
-                printf("Centroid %d init..\n", i);
+            // if(i % 10  == 0)
+                // printf("Centroid %d init..\n", i);
             unsigned total_distance_sq = 0;
             std::vector<unsigned> distances(num_vertex, std::numeric_limits<unsigned>::max());
             
@@ -147,14 +146,6 @@ public:
                 }
             }
         }
-        printf("---- [ 排序之前 ] ----:\n");
-        for(unsigned i = 0;i < centroids.size();i++){
-            printf("Center(%d): ", i);
-            for(unsigned j = 0;j < centroids[i].feat.size();j++){
-                printf("%u ", centroids[i].feat[j]);
-            }
-            printf("\n");
-        }
         for(unsigned i = 0;i < centroids.size() - 1;i++){
             Node n = centroids[i];
             unsigned k = 0;
@@ -167,14 +158,6 @@ public:
                 }
             }
             std::swap(centroids[i + 1], centroids[k]);
-        }
-        printf("---- [ 排序之后 ] ----:\n");
-        for(unsigned i = 0;i < centroids.size();i++){
-            printf("Center(%d): ", i);
-            for(unsigned j = 0;j < centroids[i].feat.size();j++){
-                printf("%u ", centroids[i].feat[j]);
-            }
-            printf("\n");
         }
         unsigned int iter = 0;
         double cond = 0.08;
@@ -225,15 +208,14 @@ public:
                 }
             }
             iter++;
-            printf("kmeans iter(%d)\n", iter);
             if(num_not_converged < converge_rate * num_clusters){
-                std::cout << "num not converged = " << num_not_converged << std::endl;
                 break;
             }
 
         }
+        printf("K-means (K = %d) results: \n", num_clusters);
         for (unsigned i = 0;i < clusters.size();i++) 
-            printf("cluster(%d) size = %d\n", i, clusters[i].size());
+            printf("  cluster(%d) size = %d\n", i, clusters[i].size());
         int total_num = 0;
         int new_cnt = 0;
         for(unsigned cid = 0; cid < clusters.size();cid++){
@@ -244,7 +226,9 @@ public:
                 new_cnt++;
             }
         }
-       printf("total_num = %d\n", total_num);
+        std::cout << "----------" << std::endl;
+        printf("[!!]Reorder finished\n");
+        std::cout << "==========" << std::endl;
     }
 
     // [*] main hisorder algorithm (for push-pull mode)
@@ -258,15 +242,11 @@ public:
         }
         std::vector<Node> centroids; 
         unsigned num_clusters = this->graph->cluster_num;
-        printf("分类数量 = %d\n", num_clusters);
         std::vector<std::vector<Node>> clusters(num_clusters); 
 
-        /* KMeans++初始�? */
         int first_center_id = rand() % nodes.size();
         centroids.push_back(nodes[first_center_id]);
         for(unsigned i = 1; i < num_clusters;i++){
-            if(i % 10  == 0)
-                printf("Centroid %d init..\n", i);
             unsigned total_distance_sq = 0;
             std::vector<unsigned> distances(nodes.size(), std::numeric_limits<unsigned>::max());
             
@@ -289,14 +269,13 @@ public:
                 }
             }
         }
-        printf("---- [ 排序之前 ] ----:\n");
-        for(unsigned i = 0;i < centroids.size();i++){
-            printf("Center(%d): ", i);
-            for(unsigned j = 0;j < centroids[i].feat.size();j++){
-                printf("%u ", centroids[i].feat[j]);
-            }
-            printf("\n");
-        }
+        // for(unsigned i = 0;i < centroids.size();i++){
+        //     printf("Center(%d): ", i);
+        //     for(unsigned j = 0;j < centroids[i].feat.size();j++){
+        //         printf("%u ", centroids[i].feat[j]);
+        //     }
+        //     printf("\n");
+        // }
         for(unsigned i = 0;i < centroids.size() - 1;i++){
             Node n = centroids[i];
             unsigned k = 0;
@@ -310,14 +289,13 @@ public:
             }
             std::swap(centroids[i + 1], centroids[k]);
         }
-        printf("---- [ 排序之后 ] ----:\n");
-        for(unsigned i = 0;i < centroids.size();i++){
-            printf("Center(%d): ", i);
-            for(unsigned j = 0;j < centroids[i].feat.size();j++){
-                printf("%u ", centroids[i].feat[j]);
-            }
-            printf("\n");
-        }
+        // for(unsigned i = 0;i < centroids.size();i++){
+        //     printf("Center(%d): ", i);
+        //     for(unsigned j = 0;j < centroids[i].feat.size();j++){
+        //         printf("%u ", centroids[i].feat[j]);
+        //     }
+        //     printf("\n");
+        // }
         unsigned int iter = 0;
         double cond = 0.08;
         double converge_rate = 0.1;
@@ -366,13 +344,13 @@ public:
                 }
             }
             iter++;
-            printf("kmeans iter(%d)\n", iter);
+            printf("Kmeans iter(%d): num not converged = %d\n", iter, num_not_converged);
             if(num_not_converged < converge_rate * num_clusters){
-                std::cout << "num not converged = " << num_not_converged << std::endl;
                 break;
             }
 
         }
+        printf("K-means (K = %d) results: \n", num_clusters);
         for (unsigned i = 0;i < clusters.size();i++) 
             printf("cluster(%d) size = %d\n", i, clusters[i].size());
         std::vector<Node> mapping;
@@ -427,11 +405,12 @@ public:
                     mapping.push_back(parts[p][k]);
             }
         }
-        printf("将所有节点分配完成后mapping数组的长�? = %ld\n", mapping.size());
+        std::cout << "----------" << std::endl;
+        printf("Partition finished!\n");
         for(unsigned i = 0;i < mapping.size();i++){
             new_id[mapping[i].id] = i;
         }
-        std::cout << "----------" << std::endl;
+        
         printf("[!!]Reorder finished\n");
         std::cout << "==========" << std::endl;
 
@@ -439,7 +418,7 @@ public:
 
     // [*] main hisorder algorithm (for push-only mode)
     void HisOrder() {
-        std::vector<Node> nodes(num_vertex); // 节点数组
+        std::vector<Node> nodes(num_vertex); 
         #pragma omp parallel for
         for(unsigned i = 0;i < num_vertex;i++){
             nodes[i].feat = graph->attr[i];
@@ -448,14 +427,11 @@ public:
         }
         std::vector<Node> centroids; 
         unsigned num_clusters = this->graph->cluster_num;
-        printf("分类数量 = %d\n", num_clusters);
-        std::vector<std::vector<Node>> clusters(num_clusters); // 聚类数组
+        std::vector<std::vector<Node>> clusters(num_clusters); 
 
         int first_center_id = rand() % nodes.size();
         centroids.push_back(nodes[first_center_id]);
         for(unsigned i = 1; i < num_clusters;i++){
-            if(i % 10  == 0)
-                printf("Centroid %d init..\n", i);
             unsigned total_distance_sq = 0;
             std::vector<unsigned> distances(nodes.size(), std::numeric_limits<unsigned>::max());
             
@@ -478,14 +454,15 @@ public:
                 }
             }
         }
-        printf("---- [ 排序之前 ] ----:\n");
+        /*
         for(unsigned i = 0;i < centroids.size();i++){
-            printf("Center(%d): ", i);
+            // printf("Center(%d): ", i);
             for(unsigned j = 0;j < centroids[i].feat.size();j++){
                 printf("%u ", centroids[i].feat[j]);
             }
             printf("\n");
         }
+        */
         for(unsigned i = 0;i < centroids.size() - 1;i++){
             Node n = centroids[i];
             unsigned k = 0;
@@ -499,7 +476,7 @@ public:
             }
             std::swap(centroids[i + 1], centroids[k]);
         }
-        printf("---- [ 排序之后 ] ----:\n");
+        /*
         for(unsigned i = 0;i < centroids.size();i++){
             printf("Center(%d): ", i);
             for(unsigned j = 0;j < centroids[i].feat.size();j++){
@@ -507,23 +484,20 @@ public:
             }
             printf("\n");
         }
-        /* KMeans算法执行 */
+        */
         unsigned int iter = 0;
         double cond = 0.08;
         double converge_rate = 0.1;
         while (iter < KMEANS_ITER) {
-            // 清空聚类结果
             for (auto& cluster : clusters) 
                 cluster.clear();
-            // 将每个节点分配到最近的质心所在的聚类
             #pragma omp parallel for
             for (unsigned i = 0;i < nodes.size();i++) {
                 unsigned min_diff = std::numeric_limits<unsigned>::max();
                 int closestCentroid = -1;
                 for (int j = 0; j < centroids.size(); j++) {
-                    //unsigned diff = nodes[i].calculate_diff(centroids[j]);
                     unsigned diff = nodes[i].calculate_diff(centroids[j]);
-                    if (diff < min_diff) { // 添加了关于尺寸的限制
+                    if (diff < min_diff) { 
                         min_diff = diff;
                         closestCentroid = j;
                     }
@@ -538,7 +512,6 @@ public:
                         clusters[i].push_back(nodes[nodeId]);
                 }
             }
-            // 更新质心位置为聚类内节点的平均�?
             unsigned num_not_converged = 0;
             #pragma omp parallel for
             for (size_t i = 0; i < centroids.size(); ++i) {
@@ -551,29 +524,24 @@ public:
                         double result = static_cast<double>(newCentroid[j]) / clusters[i].size();
                         newCentroid[j] =  static_cast<int>(std::round(result));
                     }
-                    //unsigned dis = centroids[i].calculate_diff_vec(newCentroid);
                     unsigned dis = centroids[i].calculate_diff_vec(newCentroid);
                     if(dis >= 1){
                         #pragma omp atomic
                             num_not_converged++;
-                        //#pragma omp critical
-                            //std::cout << "diff = " << dis << std::endl;
-                        
                     }
                     centroids[i].feat = newCentroid;
                 }
             }
             iter++;
             printf("kmeans iter(%d)\n", iter);
-            // 如果没有converge的分块占比少�?10%，则结束算法
             if(num_not_converged < converge_rate * num_clusters){
-                std::cout << "num not converged = " << num_not_converged << std::endl;
+                // std::cout << "num not converged = " << num_not_converged << std::endl;
                 break;
             }
         }
+        printf("K-means (K = %d) results: \n", num_clusters);
         for (unsigned i = 0;i < clusters.size();i++) 
-            printf("cluster(%d) size = %d\n", i, clusters[i].size());
-        /* 聚类结束, 开始获得partition聚类列表(考虑负载均衡) */
+            printf("  cluster(%d) size = %d\n", i, clusters[i].size());
         std::vector<std::vector<Node>> parts(num_partitions);
         const auto average_degree = num_edges / num_vertex;
         int p_id = 0;
@@ -588,8 +556,6 @@ public:
                 else
                     small_vertex.push_back(nd);
             }
-            printf("large vertex(%u) = %ld\n", cid, large_vertex.size());
-            // 将large节点全部放进
             for(unsigned lid = 0; lid < large_vertex.size();lid++){
                 if(parts[p_id].size() < params::partition_size){
                     parts[p_id++].push_back(large_vertex[lid]);
@@ -600,7 +566,6 @@ public:
                     parts[num_partitions - 1].push_back(large_vertex[lid]);
                 }
             }
-            // 将small节点成段放进
             unsigned seg_size = small_vertex.size() / (num_partitions - 1);
             for(unsigned seg = 0; seg < num_partitions - 1;seg++){
                 for(unsigned sid = seg * seg_size; sid < (seg + 1) * seg_size;sid++){
@@ -621,11 +586,12 @@ public:
                 }
             }
         }
-        // 输出每个part的大�?
         std::cout << "----------" << std::endl;
+        /*
         for(unsigned i = 0;i < num_partitions;i++){
             printf("Part(%u): size = %d\n", i, parts[i].size());
-        }
+        }*/
+        printf("Partition finished!\n");
         unsigned int new_cnt = 0;
         for(unsigned pid = 0; pid < parts.size();pid++){
             for(unsigned nid = 0; nid < parts[pid].size(); nid++){
@@ -636,7 +602,7 @@ public:
         }
         //exit(1);
         std::cout << "----------" << std::endl;
-        printf("[!!]Reorder finished, new count = %d\n", new_cnt);
+        printf("[!!]Reorder finished\n");
         std::cout << "==========" << std::endl;
     }
 
@@ -1017,15 +983,15 @@ public:
     void reorder(Algo algo){
         switch(algo) {
             case Algo::hisorder_wo_blc:
-                std::cout << "[!!] reordering method: [ history-based order ]" << '\n';
+                std::cout << "[!!] reordering method: [ Hisorder without balance ]" << '\n';
                 HisOrder_wo_blc();
                 break;
             case Algo::hisorder:
-                std::cout << "[!!] reordering method: [ history-based order + balance ]" << '\n';
+                std::cout << "[!!] reordering method: [ HisOrder + balance ]" << '\n';
                 HisOrder();
                 break;
             case Algo::hisorder_pcpm:
-                std::cout << "[!!] Reordering method: [ history-based order + balance(for pcpm) ]" << std::endl;
+                std::cout << "[!!] Reordering method: [ HisOrder for pcpm ]" << std::endl;
                 HisOrder_PCPM();
                 break;
             case Algo::randm:
@@ -1053,7 +1019,7 @@ public:
                 fastCorder();
                 break;
             case Algo::map:
-                std::cout << "reorder according to mapping file(rabbit and gorder)" << '\n';
+                std::cout << "reorder according to mapping file (rabbit and gorder)" << '\n';
                 mapReorder(this->graph->in_feat);
                 break;
             default:

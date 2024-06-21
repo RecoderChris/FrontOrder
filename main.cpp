@@ -113,8 +113,7 @@ int main(int argc, char** argv)
   //  writeEdgelist("edgelist.txt", graph);
     params::num_partitions = (graph.num_vertex-1)/params::partition_size + 1;
 
-    cout << "number of partitions used for reordering: " << params::num_partitions
-         << " with partition size " <<  params::partition_size * sizeof(float) / 1024 << " KB" << '\n';
+    cout << "number of partitions used for reordering: " << params::num_partitions << '\n';
     //////////////////////////////////////////
     // output Degree array
     //////////////////////////////////////////

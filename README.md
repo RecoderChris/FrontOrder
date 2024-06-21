@@ -100,7 +100,7 @@ $DATA_DIR
 To run HisOrder: 
 ```shell
 ./hisorder -d ${DATA_DIR}/R20.csr -o ${DATA_DIR}/R20-his.csr -r ${DATA_DIR}/R20-his.map \
--a 2 -s 128 -t 8 -f 10 -k 4 -i ${DATA_DIR}/feature/R20_dim_10.feat 
+-a 2 -s 128 -t 8 -f 10 -k 20 -i ${DATA_DIR}/feature/R20_dim_10.feat 
 ```
 The parameters in HisOrder is illustrated as follows:
 ```
@@ -112,7 +112,7 @@ The parameters in HisOrder is illustrated as follows:
     -t [ --thread ]  (=20)   threads (number of threads)
     -s [ --size ]  (=1024)   partition size (in KB, normally=L2 Cache/2)
     -f [ --feat ]  (=10)     feature size (*Hisorder only)
-    -k [ --kv ]              K value for K-means (*HisOrder Only)
+    -k [ --kv ] (=20)        K value for K-means (*HisOrder Only)
     -i [ --input_feat ]      input feature file (*HisOrder Only)
 
     [ --algorithm ]
@@ -135,5 +135,6 @@ The parameters in HisOrder is illustrated as follows:
 ## Future Work
 
 ## Citation
+If you find HisOrder is helpful to your research, please kindly cite our paper:
 
 ## References

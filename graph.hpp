@@ -133,7 +133,7 @@ public:
 
     void initAttributeFile(std::string feat_file, int feat_size)
     {
-        std::cout << "feat file = " << feat_file << std::endl;
+        std::cout << "Feature Vector at: " << feat_file << std::endl;
         std::ifstream file(feat_file); 
         if (!file.is_open()) {
             exit(1);
@@ -151,7 +151,6 @@ public:
             }
             attr.push_back(row);
             if(attr.size() == 1){
-                std::cout << "feat size = " << row.size() << std::endl;
                 this->feat = row.size();
             }
         }

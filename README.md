@@ -62,29 +62,72 @@ make
 ```
 
 ### 3. Graph Reordering
-```shell
-./hisorder -d /path/to/your/data -a 2 -s 1024 -o /path/to/store/data
-```
+The workflow of HisOrder could sliced into three stages: sampling, embedding and reordering. 
+#### 3.1 Sampling BFS Frontiers
+We execute BFS from several random starters to obtain the frontier distribution. Since we take [GPOP](https://github.com/souravpati/GPOP) as one of targeted system, we modified GPOP to sample the frontiers of BFS. 
 
+To sample frontiers for R20 graph from 15 raondom BFS requests, run:
+```shell
+cd $ROOT_DIR/gp_system/GPOP/bfs
+make
+./bfs ${DATA_DIR}/R20.csr -rounds 15 # -rounds could define the number of BFS requests
+```
+Then the sampled frontiers of BFS execution will be preserved at `${DATA_DIR}/sample` directory.
+
+It is worth noticing that the frontier distribution is independent to underlying systems. GPOP is used as an example. You can modify your graph processing system to collect the BFS frontiers as you wish. 
+
+#### 3.2 Embedding
+Then we embed the sampled frontier history into feature space:
+```shell
+cd $TOOL_DIR
+python embedding.py --data R20 --feat_dim=10 --data_dir=${DATA_DIR}
+```
+You can input `python embedding.py --help` to see the meaning of these parameters. 
+
+#### 3.3 Reordering using HisOrder
+Please check the recipes before executing HisOrder, a possible file tree when using R20.el as an example is shown as follows:
+```
+$DATA_DIR
+©À©¤©¤ feature
+©¦   ©¸©¤©¤ R20_dim_10.feat
+©À©¤©¤ R20.csr
+©À©¤©¤ R20.el
+©À©¤©¤ sample
+©¦   ©À©¤©¤ R20.bfs.0
+©¦   ...
+©¦   ©¸©¤©¤ R20.bfs.9
+```
+To run HisOrder: 
+```shell
+./hisorder -d ${DATA_DIR}/R20.csr -o ${DATA_DIR}/R20-his.csr -r ${DATA_DIR}/R20-his.map \
+-a 2 -s 128 -t 8 -f 10 -k 4 -i ${DATA_DIR}/feature/R20_dim_10.feat 
+```
+The parameters in HisOrder is illustrated as follows:
+```
     ./hisorder
-    -d [ --data ] arg           input data path
-    -o [ --output ] arg         output file path
-    -s [ --size ] arg (=1024)   partition size(vertex number)
-    -a [ --algorithm ] arg (=0) reordering algorithm
-    -t [ --thread ] arg (=20)   threads
-    -v [ --vertex ] arg (=100)  start vertex id(for new start vertex id)
-    -f [ --feat ] arg (=10)     feature size, for hisorder algorithm
-    -k [ --kv ] arg             k value for kmeans
-    -i [ --input_feat ] arg     input feature file
-    -r [ --output_map]  arg     output mapping file
+    -d [ --data ]            input data path (.csr)
+    -o [ --output ]          output file path (.csr)
+    -r [ --output_map]       output mapping file (vertex mapping of reordering)
+    -a [ --algorithm ](=0)   reordering algorithm (Including HisOrder and some baselines)
+    -t [ --thread ]  (=20)   threads (number of threads)
+    -s [ --size ]  (=1024)   partition size (in KB, normally=L2 Cache/2)
+    -f [ --feat ]  (=10)     feature size (*Hisorder only)
+    -k [ --kv ]              K value for K-means (*HisOrder Only)
+    -i [ --input_feat ]      input feature file (*HisOrder Only)
 
     [ --algorithm ]
-    original = 0,
-    hisorder_wo_blc = 1,
-    hisorder = 2,
+    hisorder_without_balance = 0,(*Out proposed method for single-thread)
+    hisorder = 1, (*Our proposed method, default)
+    hisorder_pcpm = 2, (*Out proposed method, designed for PCPM)
+    random = 3, 
+    sort = 4, 
+    fbc = 5, 
+    hc = 6, 
+    dbg = 7, 
+    corder = 8, 
+```
 
 ## Evaluation
-### Compilation
 ### Running Graph Algorithms
 
 ## Benchmark Summary

@@ -26,7 +26,7 @@ std::string getFileExtension(const std::string& fileName) {
     if (dotPos != std::string::npos && dotPos < fileName.length() - 1) {
         return fileName.substr(dotPos + 1);
     }
-    return ""; // 若未找到后缀，返回空字符串
+    return ""; // 若未找到后缀，返回空字符�?
 }
 
 //////////////////////////////////////////
@@ -34,19 +34,17 @@ std::string getFileExtension(const std::string& fileName) {
 //////////////////////////////////////////
 int main(int argc, char** argv)
 {
-    /* 处理命令行参数，获得文件名、输出文件、分块大小、重排算法和线程数量信息 */
     options_description desc{"Options"};
     desc.add_options()
         ("data,d", value<string>()->default_value(""), "input data path")
         ("output,o", value<string>()->default_value(""), "output file path")
-        ("size,s", value<int>()->default_value(512), "partition size(KB)")
+        ("out_reorder,r", value<string>()->default_value(""), "reorder file path")
+        ("size,s", value<int>()->default_value(512), "partition size")
         ("algorithm,a", value<int>()->default_value(0), "reordering algorithm")
         ("thread,t", value<int>()->default_value(20), "threads")
-        ("vertex,v", value<int>()->default_value(100), "Starting vertex of algorithm")
         ("feat,f", value<int>()->default_value(10), "Input feat len")
         ("kv,k", value<int>()->default_value(16), "Input K value for kmeans")
-        ("in_feat,i", value<string>()->default_value(""), "input feature file path")
-        ("out_reorder,r", value<string>()->default_value(""), "reorder file path");
+        ("in_feat,i", value<string>()->default_value(""), "input feature file path");
 
 
     variables_map vm;
@@ -66,7 +64,6 @@ int main(int argc, char** argv)
 
     int size = vm["size"].as<int>();
     int reorder = vm["algorithm"].as<int>();
-    int vertex = vm["vertex"].as<int>();
     int feat = vm["feat"].as<int>();
     int kv = vm["kv"].as<int>();
     params::num_threads = vm["thread"].as<int>();
@@ -75,7 +72,6 @@ int main(int argc, char** argv)
         cout << desc << '\n';
         exit(1);
     } 
-    // 判断是否需要输出mapping文件
     bool if_out_reorder = false;
     if(reorder_file != "")
         if_out_reorder = true;
@@ -116,7 +112,6 @@ int main(int argc, char** argv)
     //////////////////////////////////////////
   //  writeEdgelist("edgelist.txt", graph);
     params::num_partitions = (graph.num_vertex-1)/params::partition_size + 1;
-    printf("分块数量为 %d, 每个分块中含有的节点数目为 %d\n", params::num_partitions, params::partition_size);
 
     cout << "number of partitions used for reordering: " << params::num_partitions
          << " with partition size " <<  params::partition_size * sizeof(float) / 1024 << " KB" << '\n';
@@ -127,42 +122,33 @@ int main(int argc, char** argv)
     times = timer.elapsed();
     cout << times.wall/(1e9) << "s: outdegree is computed "  << '\n';
 
-    //////////////////////////////////////////
-    // 准备特征向量数组
-    //////////////////////////////////////////
 
     if(feat_file != "" && !feat_file.empty()){
-        std::string fileExtension = getFileExtension(feat_file);
         graph.in_feat = feat_file;
-        if(fileExtension == "feat")
-            graph.initAttributeFile(feat_file, feat);
+        graph.initAttributeFile(feat_file, feat);
     }
-    else{
-        graph.initAttribute(feat); // 如果是horder算法, 则提前图里面的特征向量
-    }
+    // TODO: add a logic to handle missing feature file
     Orderer orderer(&graph);
     
     ///////////////////////////////
     // re-order the graph 
     //////////////////////////////
     std::cout << "==========" << std::endl;
-    if(algo != Algo::original) {
-        cpu_timer reorder_timer;
-        float order_time = 0.0;
+    cpu_timer reorder_timer;
+    float order_time = 0.0;
 
-        orderer.reorder(algo, vertex);
-        cout << "reordering time is: "  << reorder_timer.elapsed().wall/(1e9) << '\n';
+    orderer.reorder(algo);
+    cout << "reordering time is: "  << reorder_timer.elapsed().wall/(1e9) << '\n';
+
+    orderer.getNewGraph(algo);
+    cout << times.wall/(1e9) << "s: a new graph is constructed, total time is: "  << reorder_timer.elapsed().wall/(1e9) << '\n';
     
-        orderer.getNewGraph(algo);
-        cout << times.wall/(1e9) << "s: a new graph is constructed, total time is: "  << reorder_timer.elapsed().wall/(1e9) << '\n';
-        
-        if(if_out_reorder){
-            writeReorder(reorder_file, orderer, graph.num_edges, algo);
-        }
-        
-        if(!write_file.empty()){
-            writeGraph(write_file, graph);
-        }
-   }
+    if(if_out_reorder){
+        writeReorder(reorder_file, orderer, graph.num_edges, algo);
+    }
+    
+    if(!write_file.empty()){
+        writeGraph(write_file, graph);
+    }
 
 }

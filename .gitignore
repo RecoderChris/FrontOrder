@@ -31,8 +31,11 @@
 *.out
 *.app
 *.bin
+hisorder
 
 # directories
 dataset/*
 feature/*
 .vscode/*
+
+# png

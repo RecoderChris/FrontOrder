@@ -88,14 +88,14 @@ You can input `python embedding.py --help` to see the meaning of these parameter
 Please check the recipes before executing HisOrder, a possible file tree when using R20.el as an example is shown as follows:
 ```
 $DATA_DIR
-©À©¤©¤ feature
-©¦   ©¸©¤©¤ R20_dim_10.feat
-©À©¤©¤ R20.csr
-©À©¤©¤ R20.el
-©À©¤©¤ sample
-©¦   ©À©¤©¤ R20.bfs.0
-©¦   ...
-©¦   ©¸©¤©¤ R20.bfs.9
+|-- feature
+|   |-- R20_dim_10.feat
+|-- R20.csr
+|-- R20.el
+|-- sample
+|   |-- R20.bfs.0
+|   ...
+|   |-- R20.bfs.9
 ```
 To run HisOrder: 
 ```shell

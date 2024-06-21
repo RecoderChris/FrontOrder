@@ -144,7 +144,7 @@ Notice: please uncomment the `SAMPLE=1` line. And we run `make clean && make`, t
 ./bfs ../../../dataset/R20-his.csr -s <start_vertex> -t <thread_num> -rounds <round_num> -map ../../../dataset/R20-his.map # original graph 
 ```
 
-## Benchmark Summary
+### Benchmark Summary
 
 ## Future Work
 

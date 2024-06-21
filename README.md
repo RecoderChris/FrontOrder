@@ -66,9 +66,9 @@ The workflow of HisOrder could sliced into three stages: sampling, embedding and
 #### 3.1 Sampling BFS Frontiers
 We execute BFS from several random starters to obtain the frontier distribution. Since we take [GPOP](https://github.com/souravpati/GPOP) as one of targeted system, we modified GPOP to sample the frontiers of BFS. 
 
-To sample frontiers for R20 graph from 15 raondom BFS requests, run:
+To sample frontiers for R20 graph from 15 random BFS requests, run:
 ```shell
-cd $ROOT_DIR/gp_system/GPOP/bfs
+cd $ROOT_DIR/system/GPOP/bfs
 make
 ./bfs ${DATA_DIR}/R20.csr -rounds 15 # -rounds could define the number of BFS requests
 ```
@@ -128,7 +128,21 @@ The parameters in HisOrder is illustrated as follows:
 ```
 
 ## Evaluation
+After generating the reordered CSR graph, we can test the graph processing performance under different CSR format:
 ### Running Graph Algorithms
+We take GPOP as example, firstly we change directory to GPOP:
+```shell
+cd ${ROOT_DIR}/system/GPOP
+```
+Taking BFS as an example:
+```shell
+cd BFS
+```
+Notice: please uncomment the `SAMPLE=1` line. And we run `make clean && make`, then we run bfs in GPOP using both HisOrder and original graph format:
+```shell
+./bfs ../../../dataset/R20.csr -s <start_vertex> -t <thread_num> -rounds <round_num> # original graph 
+./bfs ../../../dataset/R20-his.csr -s <start_vertex> -t <thread_num> -rounds <round_num> -map ../../../dataset/R20-his.map # original graph 
+```
 
 ## Benchmark Summary
 

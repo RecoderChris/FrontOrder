@@ -9,7 +9,7 @@
  * transposed bin graph to reduce cache misses in scatter
  */
 
-#define CACHE_SIZE_KB  256
+#define CACHE_SIZE_KB  128
 
 #include <fstream>
 #include <iostream>
@@ -160,7 +160,7 @@ void initialize(graph* G, int argc, char** argv)
     
     if (argc < 2)
     {
-        printf("Usage : %s <filename> -s <start node(not needed for pr)> -t <numThreads(optional)> -iter <#iterations(optional) -rounds <#rounds(default 3)> \n", argv[0]);
+        printf("Usage : %s <filename> -s <start node(not needed for pr)> -t <numThreads(optional)> -iter <#iterations(optional) -rounds <#rounds(default 3)> -map <map_file>\n", argv[0]);
         exit(1);
     }
 

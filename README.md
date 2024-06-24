@@ -4,7 +4,7 @@ Frontier-guided Distribution Graph Reordering
 ## What is it?
 HisOrder is a graph reordering method, which improves graph locality to reduce the cache misses in graph processing. 
 
-Unlike the previous reordering which depends on static characteristics in graph, HisOrder firstly profiles the traces of **His**torical graph processing (primarily the concurrent frontiers) to construct the locality metric between vertices, and then utilizes an unsupervised ML method (K-means at present) to excavate the clusters of high locality to guide graph **Reorder**ing. Furthermore, since the learned clusters of vertices are more likely to be co-activated, HisOrder also fine-tunes the load balance in parallel graph processing with the clusters. 
+Unlike the previous reordering which depends on static characteristics in graph, HisOrder firstly profiles the traces of **his**torical graph processing (primarily the concurrent frontiers) to construct the locality metric between vertices, and then utilizes an unsupervised ML method (K-means at present) to excavate the clusters of high locality to guide graph **reorder**ing. Furthermore, since the learned clusters of vertices are more likely to be co-activated, HisOrder also fine-tunes the load balance in parallel graph processing with the clusters. 
 
 ![hisorder](img/hisorder.png)
 
@@ -17,7 +17,7 @@ At the minimum, HisOrder depends on the following software:
 - g++>=7.5.0 (compliant with C++11 standard and OpenMP is required)
 - Boost (>=1.58.0)
 
-A possible command to satisfy these dependencies:
+A possible command to satisfy all these dependencies:
 ```shell
 apt-get install build-essentials libboost-dev libomp-dev
 ```
@@ -62,7 +62,7 @@ make
 ```
 
 ### 3. Graph Reordering
-The workflow of HisOrder could sliced into three stages: sampling, embedding and reordering. 
+The workflow of HisOrder could be sliced into three stages: sampling, embedding and reordering. 
 #### 3.1 Sampling BFS Frontiers
 We execute BFS from several random starters to obtain the frontier distribution. Since we take [GPOP](https://github.com/souravpati/GPOP) as one of targeted system, we modified GPOP to sample the frontiers of BFS. 
 
@@ -128,7 +128,7 @@ The parameters in HisOrder is illustrated as follows:
 ```
 
 ## Evaluation
-After generating the reordered CSR graph, we can test the graph processing performance under different CSR format:
+After generating the reordered CSR graph, we can test the graph processing performance under different CSR format. 
 ### Running Graph Algorithms
 We take GPOP as example, firstly we change directory to GPOP:
 ```shell
@@ -145,7 +145,7 @@ Notice: please uncomment the `SAMPLE=1` line. And we run `make clean && make`, t
 ```
 
 ### Benchmark Summary
-We evaluate the effect of HisOrder on several representative graph processing systems, including Ligra (in-memory, vertex-centric), GPOP (in-memory, partition-centric), and GridGraph (storage-based). 
+We evaluate the effect of HisOrder on several representative graph processing systems, including Ligra (in-memory, vertex-centric), GPOP (in-memory, partition-centric), and GridGraph (storage-based out-of-core system). 
 
 #### Testbed
 | Item     |  Configurations                                           |
@@ -157,19 +157,29 @@ We evaluate the effect of HisOrder on several representative graph processing sy
 |    OS    |                     Ubunut 16.04.7 LTS                    |
 
 #### Evaluation Results
-We compared the performance of HisOrder with existing graph reordering methods, including sort-by-degree, Degre-based Grouping (DBG), Hub Clustering(HC), Frequency-based Clustering(FBC), Corder(CO), rabbit(RBT) and Gorder(GO). 
-We show the average MTEPS of running BFS algorithm on 6 different graphs when using baseline(without reordering), SOTA(best existing method) and HisOrder. 
-As we can see, HisOrder could improve the graph processing efficiency on different graph processing systems, and has the potential to beat the most effective existing reordering methods. 
-If interested, please refer to our paper to see the more details about the evaluation. 
-| Systems  | Ligra         | GPOP           | GridGraph     |
+We compared the performance of HisOrder with large number of existing graph reordering methods, including sort-by-degree, Degre-based Grouping  (**DBG**), Hub Clustering (**HC**), Frequency-based Clustering(**FBC**), Corder(**CO**), rabbit(**RBT**) and Gorder(**GO**). 
+We show the average MTEPS of running BFS algorithm on 6 different graphs when using baseline (without reordering), SOTA (the best performance in existing method) and HisOrder. 
+
+| Methods  | Ligra         | GPOP           | GridGraph     |
 |----------|---------------|----------------|---------------|
 | baseline | 5210 MTEPS     | 5266 MTEPS      | 272 MTEPS      |
-| SOTA     | 5807 MTEPS(CO) | 5856 MTEPS(RBT) | 309 MTEPS(DBG) |
+| SOTA     | 5807 MTEPS(**CO**) | 5856 MTEPS(**RBT**) | 309 MTEPS(**DBG**) |
 | HisOrder | **7149** MTEPS     | **7262** MTEPS      | **401** MTEPS      |
 
+As we can see, HisOrder could improve the graph processing efficiency on different graph processing systems, and can beat the most effective existing reordering methods. 
+
+Please refer to our paper to see the more details about the evaluation. 
+
 ## Future Work
+1. Customize graph partition for heterogeneous computing architecture (On-going)
+
+2. Partition neurons in large language model for fast LLM inference under resource-constraint environment (Future idea)
 
 ## Citation
 If you find HisOrder is helpful to your research, please kindly cite our paper:
+```
 
-## References
+```
+
+## Contact
+[Xinmiao Zhang](mailto:zhangxinmiao20s@ict.ac.cn), [Cheng Liu](mailto:liucheng@ict.ac.cn)

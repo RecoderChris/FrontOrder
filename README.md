@@ -145,6 +145,27 @@ Notice: please uncomment the `SAMPLE=1` line. And we run `make clean && make`, t
 ```
 
 ### Benchmark Summary
+We evaluate the effect of HisOrder on several representative graph processing systems, including Ligra (in-memory, vertex-centric), GPOP (in-memory, partition-centric), and GridGraph (storage-based). 
+
+#### Testbed
+| Item     |  Configurations                                           |
+|:--------:|:---------------------------------------------------------:|
+|    CPU   | 2×Intel Xeon Platinum 8163 CPU@2.5GHz, <br>each with 24 Cores |
+|  Threads |             Up to 96 threads(With hyperthread)            |
+| Cache |               32KB L1d-Cache, 32KB L1i-Cache<br> 1MB L2 Cache, 32MB LLC |
+|  Memory  |                      512GB DDR4 DIMM                      |
+|    OS    |                     Ubunut 16.04.7 LTS                    |
+
+#### Evaluation Results
+We compared the performance of HisOrder with existing graph reordering methods, including sort-by-degree, Degre-based Grouping (DBG), Hub Clustering(HC), Frequency-based Clustering(FBC), Corder(CO), rabbit(RBT) and Gorder(GO). 
+We show the average MTEPS of running BFS algorithm on 6 different graphs when using baseline(without reordering), SOTA(best existing method) and HisOrder. 
+As we can see, HisOrder could improve the graph processing efficiency on different graph processing systems, and has the potential to beat the most effective existing reordering methods. 
+If interested, please refer to our paper to see the more details about the evaluation. 
+| Systems  | Ligra         | GPOP           | GridGraph     |
+|----------|---------------|----------------|---------------|
+| baseline | 5210 MTEPS     | 5266 MTEPS      | 272 MTEPS      |
+| SOTA     | 5807 MTEPS(CO) | 5856 MTEPS(RBT) | 309 MTEPS(DBG) |
+| HisOrder | **7149** MTEPS     | **7262** MTEPS      | **401** MTEPS      |
 
 ## Future Work
 

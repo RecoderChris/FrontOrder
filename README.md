@@ -150,7 +150,7 @@ We evaluate the effect of HisOrder on several representative graph processing sy
 #### Testbed
 | Item     |  Configurations                                           |
 |:--------:|:---------------------------------------------------------:|
-|    CPU   | 2$\times$Intel Xeon Platinum 8163 CPU@2.5GHz, <br>each with 24 Cores |
+|    CPU   | 2 x Intel Xeon Platinum 8163 CPU@2.5GHz, <br>each with 24 Cores |
 |  Threads |             Up to 96 threads(With hyperthread)            |
 | Cache |               32KB L1d-Cache, 32KB L1i-Cache<br> 1MB L2 Cache, 32MB LLC |
 |  Memory  |                      512GB DDR4 DIMM                      |

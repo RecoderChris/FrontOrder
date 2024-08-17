@@ -6,7 +6,7 @@ FrontOrder is a graph reordering method, which improves graph locality to reduce
 
 Unlike the previous reordering which depends on static characteristics in graph, FrontOrder firstly profiles the traces of BFS samplings (primarily the concurrent frontiers) to construct the locality metric between vertices, and then utilizes an unsupervised ML method (K-means at present) to excavate the clusters of high locality to guide graph reordering. Furthermore, since the learned clusters of vertices are more likely to be co-activated, FrontOrder also fine-tunes the load balance in parallel graph processing with the clusters. 
 
-![FrontOrder](img/FrontOrder.png)
+![FrontOrder](img/hisorder.png)
 
 For more details, please refer to our paper. 
 

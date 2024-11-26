@@ -11,8 +11,6 @@
 #include "order.hpp"
 #include <algorithm>
 
-/* 读取filename对应的二进制图文件，并把节点数、边数、
-    csr的row和col数组填写进Graph数据结构中 */
 bool parseGraph(std::string filename, Graph& graph) {
     std::ifstream csr_file;
     csr_file.open(filename, std::ios::binary);
@@ -78,7 +76,7 @@ bool writeGraph(std::string filename, Graph& graph) {
 
     output_file.close();
 
-    std::cout << filename << " is writen" << std::endl;
+    std::cout << "[reordered graph] " << filename << std::endl;
     return true;
 };
 
@@ -95,7 +93,7 @@ bool writeReorder(std::string filename, Orderer& order, unsigned int m, Algo alg
         output_file << i << " " << order.new_id[i] << std::endl;
     }
 
-    std::cout << filename << " is writen." << std::endl;
+    std::cout << "[vertex mapping] " << filename << std::endl;
     return true;
 };
 

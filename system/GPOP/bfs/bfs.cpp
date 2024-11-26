@@ -149,7 +149,7 @@ int main(int argc, char** argv)
         }
         if( clock_gettime( CLOCK_REALTIME, &end) == -1 ) { perror("clock gettime");}
         time = (end.tv_sec - start.tv_sec)+ (int)(end.tv_nsec - start.tv_nsec)/1e9;
-        printf("bfs, %d, %s, %lf\n", NUM_THREADS, argv[1], time);
+        printf("bfs, iter = %d, %lf\n", G.numIter, time);
         ctr++;
         T += time; 
     }

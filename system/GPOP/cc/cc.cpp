@@ -50,7 +50,7 @@ struct CC_F{
 int main(int argc, char** argv)
 {
     graph<intV> G;
-    string data_name = initialize(&G, argc, argv);
+    initialize(&G, argc, argv);
     initBin<intV>(&G);
     intV n = G.numVertex;
     intV* label = new intV [n]();
@@ -77,28 +77,6 @@ int main(int argc, char** argv)
     int ctr = 0;
     float T = 0;
     while(ctr < G.rounds){
-#ifdef SAMPLE_MODE
-        std::string log_dir = "/home/zhangxm/project/data/" + data_name + "/sample/";
-        std::cout << "sampling dir = " << log_dir << std::endl;
-        if(!directoryExists(log_dir)){
-            if(!createDirectory(log_dir)){
-                std::cout << "Can not create directory " << log_dir << std::endl;
-            }
-        }
-        std::string log_file = log_dir + data_name + ".cc."  + std::to_string(ctr);
-        std::cout << "log file name = " << log_file << std::endl;
-        std::ifstream file(log_file.c_str());
-        if(file.good()){
-            if(std::remove(log_file.c_str()) == 0)
-                std::cout << "文件删除成功" << std::endl;
-            else
-                std::cout << "文件无法删除" << std::endl;
-        }
-        file.close();
-        std::ofstream ofs(log_file.c_str(), std::ios::app);
-        ofs << G.numVertex << std::endl;
-        std::cout << "========== [round " << ctr << " ] ==========" << std::endl;
-#endif
         for(int i=0;i<n;i++){
             label[G.new_id[i]] = i;
         }
@@ -109,18 +87,9 @@ int main(int argc, char** argv)
 
         while((G.frontierSize > 0))
         {
-            // printf("-----[ Iter = %u ]-----\n", numIter);
-            // printf("Frontier size = %u\n", G.frontierSize.load());
-            #ifdef SAMPLE_MODE
-                scatter_and_gather<intV>(&G, CC_F(label), log_file);
-            #else
-                scatter_and_gather<intV>(&G, CC_F(label), "");
-            #endif
+            scatter_and_gather<intV>(&G, CC_F(label), "");
             numIter++;
         }
-#ifdef SAMPLE_MODE
-        ofs.close();
-#endif
         if( clock_gettime( CLOCK_REALTIME, &end) == -1 ) { perror("clock gettime");}
         time = (end.tv_sec - start.tv_sec)+ (int)(end.tv_nsec - start.tv_nsec)/1e9;
         T += time;

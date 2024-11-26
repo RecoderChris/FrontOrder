@@ -11,7 +11,7 @@ endif
 
 
 CC      = g++
-CPPFLAGS= -O3 -c -std=c++11 -fopenmp -mavx -w $(INTE) $(INTV)
+CPPFLAGS= -O3 -c -std=c++11 -fopenmp -mavx -w $(INTE) $(INTV) 
 LDFLAGS = -fopenmp -m64 -lpthread 
 SOURCES = sssp.cpp 
 OBJECTS = $(SOURCES:.cpp=.o)

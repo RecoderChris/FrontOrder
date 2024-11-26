@@ -1,7 +1,6 @@
 #HUGE_EDGE=1
 #HUGE_VERTEX=1
 #SAMPLE=1
-
 ifdef HUGE_EDGE
 INTE = -DHUGE_EDGE
 endif
@@ -15,7 +14,7 @@ SAMPLE_MODE = -DSAMPLE_MODE
 endif
 
 CC      = g++ -g
-CPPFLAGS= -O3 -c -std=c++11 -fopenmp -mavx -w $(INTE) $(INTV) $(SAMPLE_MODE)
+CPPFLAGS= -O3 -c -std=c++11 -fopenmp -mavx -w $(INTE) $(INTV) $(SAMPLE_MODE) 
 LDFLAGS = -fopenmp -m64 -lpthread 
 SOURCES = bfs.cpp 
 OBJECTS = $(SOURCES:.cpp=.o)

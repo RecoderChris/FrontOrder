@@ -1,5 +1,5 @@
 # FrontOrder
-Frontier-guided Graph Reordering
+> [PPoPP' 25] POSTER: Frontier-guidedGraph Reordering
 
 ## What is it?
 FrontOrder is a graph reordering method, which improves graph locality to reduce the cache misses in graph processing. 

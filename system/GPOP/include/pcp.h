@@ -9,7 +9,7 @@
  * transposed bin graph to reduce cache misses in scatter
  */
 
-#define CACHE_SIZE_KB  128
+#define CACHE_SIZE_KB  512
 
 #include <fstream>
 #include <iostream>
@@ -107,7 +107,7 @@ void mapReorder(graph* G, std::string mapping_file) {
     ifs >> num_vertex;
     ifs >> num_edges;
     G->new_id = std::vector<intV>(num_vertex, 0);
-    std::cout << " num_vertex: " << num_vertex << " num_edges: "  << num_edges << std::endl;
+    // std::cout << " num_vertex: " << num_vertex << " num_edges: "  << num_edges << std::endl;
     char c;
     unsigned long int st, v, d2s;
     for ( unsigned int i = 0 ; i < num_vertex ; i++ ) {
@@ -122,8 +122,8 @@ void initialize(graph* G, int argc, char** argv)
 {
     string map_file = "";
     G->start = 1; 
-    G->rounds= 10; 
-    std::cout << "=====[ Check Configs ]=====" << std::endl;
+    G->rounds= 5; 
+    // std::cout << "=====[ Check Configs ]=====" << std::endl;
     for (int i = 1; i < argc; i++)
     {  
         if (i + 1 != argc)
@@ -132,11 +132,6 @@ void initialize(graph* G, int argc, char** argv)
             {                 
                 G->start = (intV)atoi(argv[i + 1]);    
                 i++;
-            }
-            if (strcmp(argv[i], "-t") == 0) // num threads 
-            {                 
-                NUM_THREADS = (unsigned int)atoi(argv[i + 1]);    
-                i++;    
             }
             if (strcmp(argv[i], "-iter") == 0)  // num iterations
             {                 
@@ -152,7 +147,7 @@ void initialize(graph* G, int argc, char** argv)
             {
                 map_file = argv[i + 1];
                 i++;
-                std::cout << "map file = " << map_file << std::endl;
+                // std::cout << "map file = " << map_file << std::endl;
                 mapReorder(G, map_file);
             }
         }
@@ -164,6 +159,7 @@ void initialize(graph* G, int argc, char** argv)
         exit(1);
     }
 
+    NUM_THREADS = omp_get_max_threads() / 2;
     omp_set_num_threads(NUM_THREADS);
 
     //////////////////////////////////////////
@@ -181,14 +177,14 @@ void initialize(graph* G, int argc, char** argv)
     }
 #ifndef SAMPLE_MODE
     G->start = G->new_id[G->start];
-    std::cout << "New start id = " << G->start << std::endl;
+    std::cout << "New starter = " << G->start << std::endl;
 #endif // !
-    printf("L2 Cache(KB) = %d\n", CACHE_SIZE_KB);
+    // printf("L2 Cache(KB) = %d\n", CACHE_SIZE_KB);
 
     // intV numVerticesPerBin= binWidth;
     intV numVerticesPerBin= (G->numVertex/(NUM_THREADS*4));
     numVerticesPerBin = (numVerticesPerBin < binWidth) ? numVerticesPerBin : binWidth;
-    printf("CPU number = %d\n", NUM_THREADS);
+    // printf("CPU number = %d\n", NUM_THREADS);
     intV pow2=1;
     while(pow2<=numVerticesPerBin)
         pow2*=2;
@@ -203,7 +199,7 @@ void initialize(graph* G, int argc, char** argv)
     //initialize graph frontier, degree etc.//
     //////////////////////////////////////////
     initGraph (G);
-    printf("Number of rounds (samplings) = %u\n", G->rounds);
+    // printf("Number of rounds (samplings) = %u\n", G->rounds);
 }
 
 template<class type, class graph>

@@ -82,8 +82,7 @@ public:
     }
    
     void printGraph(bool all = false) {
-        std::cout << "num vertex: " << num_vertex << std::endl;
-        std::cout << "num edges: " << num_edges <<std::endl;
+        
         #ifdef WEIGHTED
         std::cout << "weighted graph" <<std::endl;
         #endif
@@ -133,7 +132,7 @@ public:
 
     void initAttributeFile(std::string feat_file, int feat_size)
     {
-        std::cout << "Feature Vector at: " << feat_file << std::endl;
+        // std::cout << "Feature Vector at: " << feat_file << std::endl;
         std::ifstream file(feat_file); 
         if (!file.is_open()) {
             exit(1);

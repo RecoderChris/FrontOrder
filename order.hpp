@@ -106,133 +106,8 @@ public:
         levels.back() = UINT_MAX;
     }
 
-    void HisOrder_wo_blc() {
-        std::vector<Node> nodes(num_vertex); 
-        #pragma omp parallel for
-        for(unsigned i = 0;i < num_vertex;i++){
-            nodes[i].feat = graph->attr[i];
-            nodes[i].id = i;
-            nodes[i].cluster_id = -1;
-        }
-        std::vector<Node> centroids; 
-        unsigned num_clusters = this->graph->cluster_num;
-        std::vector<std::vector<Node>> clusters(num_clusters); 
-
-        /* KMeans++ */
-        int first_center_id = rand() % nodes.size();
-        centroids.push_back(nodes[first_center_id]);
-        for(unsigned i = 1; i < num_clusters;i++){
-            // if(i % 10  == 0)
-                // printf("Centroid %d init..\n", i);
-            unsigned total_distance_sq = 0;
-            std::vector<unsigned> distances(num_vertex, std::numeric_limits<unsigned>::max());
-            
-            #pragma omp parallel for
-            for(unsigned j = 0; j < nodes.size();j++){
-                for(Node& centroid : centroids){
-                    unsigned distance = centroid.calculate_diff_kmp(nodes[j]);
-                    distances[j] = std::min(distances[j], distance);
-                }
-                unsigned sq = distances[j] * distances[j];
-                #pragma omp atomic
-                    total_distance_sq += sq;
-            }
-            double randValue = std::rand() / (RAND_MAX + 1.0) * total_distance_sq;
-            for(unsigned j = 0; j < num_vertex;j++){
-                randValue -= distances[j] * distances[j];
-                if(randValue <= 0){
-                    centroids.push_back(nodes[j]);
-                    break;
-                }
-            }
-        }
-        for(unsigned i = 0;i < centroids.size() - 1;i++){
-            Node n = centroids[i];
-            unsigned k = 0;
-            unsigned dis = std::numeric_limits<unsigned>::max();
-            for(unsigned j = i + 1;j < centroids.size();j++){
-                unsigned tmp_dis = n.calculate_diff_kmp(centroids[j]);
-                if(tmp_dis < dis){
-                    dis = tmp_dis;
-                    k = j;
-                }
-            }
-            std::swap(centroids[i + 1], centroids[k]);
-        }
-        unsigned int iter = 0;
-        double cond = 0.08;
-        double converge_rate = 0.1;
-        while (iter < KMEANS_ITER) {
-            for (auto& cluster : clusters) 
-                cluster.clear();
-            #pragma omp parallel for
-            for (unsigned i = 0;i < nodes.size();i++) {
-                unsigned min_diff = std::numeric_limits<unsigned>::max();
-                int closestCentroid = -1;
-                for (int j = 0; j < centroids.size(); j++) {
-                    unsigned diff = nodes[i].calculate_diff(centroids[j]);
-                    if (diff < min_diff) { 
-                        min_diff = diff;
-                        closestCentroid = j;
-                    }
-                }
-                assert(closestCentroid != -1);
-                nodes[i].cluster_id = closestCentroid;
-            }
-            #pragma omp parallel for
-            for(unsigned i = 0; i < centroids.size();i++){
-                for(unsigned nodeId = 0; nodeId < nodes.size(); nodeId++){
-                    if(nodes[nodeId].cluster_id == i)
-                        clusters[i].push_back(nodes[nodeId]);
-                }
-            }
-            unsigned num_not_converged = 0;
-            #pragma omp parallel for
-            for (size_t i = 0; i < centroids.size(); ++i) {
-                if (!clusters[i].empty()) {
-                    unsigned dim = centroids[i].feat.size();
-                    std::vector<unsigned> newCentroid(dim, 0);
-                    for (size_t j = 0; j < dim; ++j){
-                        for (const auto& node : clusters[i])
-                            newCentroid[j] += node.feat[j];
-                        double result = static_cast<double>(newCentroid[j]) / clusters[i].size();
-                        newCentroid[j] =  static_cast<int>(std::round(result));
-                    }
-                    //unsigned dis = centroids[i].calculate_diff_vec(newCentroid);
-                    unsigned dis = centroids[i].calculate_diff_vec(newCentroid);
-                    if(dis >= 1){
-                        #pragma omp atomic
-                            num_not_converged++;
-                    }
-                    centroids[i].feat = newCentroid;
-                }
-            }
-            iter++;
-            if(num_not_converged < converge_rate * num_clusters){
-                break;
-            }
-
-        }
-        printf("K-means (K = %d) results: \n", num_clusters);
-        for (unsigned i = 0;i < clusters.size();i++) 
-            printf("  cluster(%d) size = %d\n", i, clusters[i].size());
-        int total_num = 0;
-        int new_cnt = 0;
-        for(unsigned cid = 0; cid < clusters.size();cid++){
-            total_num += clusters[cid].size();
-            for(unsigned nid = 0; nid < clusters[cid].size(); nid++){
-                unsigned int old_id = clusters[cid][nid].id;
-                new_id[old_id] = new_cnt;
-                new_cnt++;
-            }
-        }
-        std::cout << "----------" << std::endl;
-        printf("[!!]Reorder finished\n");
-        std::cout << "==========" << std::endl;
-    }
-
-    // [*] main hisorder algorithm (for push-pull mode)
-    void HisOrder_PCPM(){
+    // [*] main hisorder algorithm 
+    void FrontOrder() {
         std::vector<Node> nodes(num_vertex); 
         #pragma omp parallel for
         for(unsigned i = 0;i < num_vertex;i++){
@@ -247,6 +122,8 @@ public:
         int first_center_id = rand() % nodes.size();
         centroids.push_back(nodes[first_center_id]);
         for(unsigned i = 1; i < num_clusters;i++){
+            if(i % 10  == 0)
+                printf("Centroid %d init\n", i);
             unsigned total_distance_sq = 0;
             std::vector<unsigned> distances(nodes.size(), std::numeric_limits<unsigned>::max());
             
@@ -269,191 +146,7 @@ public:
                 }
             }
         }
-        // for(unsigned i = 0;i < centroids.size();i++){
-        //     printf("Center(%d): ", i);
-        //     for(unsigned j = 0;j < centroids[i].feat.size();j++){
-        //         printf("%u ", centroids[i].feat[j]);
-        //     }
-        //     printf("\n");
-        // }
-        for(unsigned i = 0;i < centroids.size() - 1;i++){
-            Node n = centroids[i];
-            unsigned k = 0;
-            unsigned dis = std::numeric_limits<unsigned>::max();
-            for(unsigned j = i + 1;j < centroids.size();j++){
-                unsigned tmp_dis = n.calculate_diff_kmp(centroids[j]);
-                if(tmp_dis < dis){
-                    dis = tmp_dis;
-                    k = j;
-                }
-            }
-            std::swap(centroids[i + 1], centroids[k]);
-        }
-        // for(unsigned i = 0;i < centroids.size();i++){
-        //     printf("Center(%d): ", i);
-        //     for(unsigned j = 0;j < centroids[i].feat.size();j++){
-        //         printf("%u ", centroids[i].feat[j]);
-        //     }
-        //     printf("\n");
-        // }
-        unsigned int iter = 0;
-        double cond = 0.08;
-        double converge_rate = 0.1;
-        while (iter < KMEANS_ITER) {
-            for (auto& cluster : clusters) 
-                cluster.clear();
-            #pragma omp parallel for
-            for (unsigned i = 0;i < nodes.size();i++) {
-                unsigned min_diff = std::numeric_limits<unsigned>::max();
-                int closestCentroid = -1;
-                for (int j = 0; j < centroids.size(); j++) {
-                    unsigned diff = nodes[i].calculate_diff(centroids[j]);
-                    if (diff < min_diff) { 
-                        min_diff = diff;
-                        closestCentroid = j;
-                    }
-                }
-                assert(closestCentroid != -1);
-                nodes[i].cluster_id = closestCentroid;
-            }
-            #pragma omp parallel for
-            for(unsigned i = 0; i < centroids.size();i++){
-                for(unsigned nodeId = 0; nodeId < nodes.size(); nodeId++){
-                    if(nodes[nodeId].cluster_id == i)
-                        clusters[i].push_back(nodes[nodeId]);
-                }
-            }
-            unsigned num_not_converged = 0;
-            #pragma omp parallel for
-            for (size_t i = 0; i < centroids.size(); ++i) {
-                if (!clusters[i].empty()) {
-                    unsigned dim = centroids[i].feat.size();
-                    std::vector<unsigned> newCentroid(dim, 0);
-                    for (size_t j = 0; j < dim; ++j){
-                        for (const auto& node : clusters[i])
-                            newCentroid[j] += node.feat[j];
-                        double result = static_cast<double>(newCentroid[j]) / clusters[i].size();
-                        newCentroid[j] =  static_cast<int>(std::round(result));
-                    }
-                    unsigned dis = centroids[i].calculate_diff_vec(newCentroid);
-                    if(dis >= 1){
-                        #pragma omp atomic
-                            num_not_converged++;
-                    }
-                    centroids[i].feat = newCentroid;
-                }
-            }
-            iter++;
-            printf("Kmeans iter(%d): num not converged = %d\n", iter, num_not_converged);
-            if(num_not_converged < converge_rate * num_clusters){
-                break;
-            }
-
-        }
-        printf("K-means (K = %d) results: \n", num_clusters);
-        for (unsigned i = 0;i < clusters.size();i++) 
-            printf("cluster(%d) size = %d\n", i, clusters[i].size());
-        std::vector<Node> mapping;
-        for(unsigned i = 0;i < clusters.size();i++){
-            unsigned part_num = (clusters[i].size() - 1) / params::partition_size + 1;
-            std::vector<std::vector<Node>> parts(part_num);
-            std::vector<Node> large_vertex;
-            std::vector<Node> small_vertex;
-            for(unsigned nid = 0; nid < clusters[i].size(); nid++){
-                Node n = clusters[i][nid];
-                if(graph->out_degree[n.id] > average_degree)
-                    large_vertex.push_back(n);
-                else
-                    small_vertex.push_back(n);
-            }
-            unsigned p_id = 0;
-            unsigned seg_size;
-            if(part_num > 1){
-                for(unsigned lid = 0; lid < large_vertex.size();lid++){
-                    if(parts[p_id].size() < params::partition_size){
-                        parts[p_id++].push_back(large_vertex[lid]);
-                        p_id = p_id % (part_num - 1);
-                    }
-                    else{
-                        p_id = (p_id + 1) % (part_num - 1);
-                        parts[part_num - 1].push_back(large_vertex[lid]);
-                    }
-                }
-                seg_size = small_vertex.size() / part_num + 1;
-                for(unsigned seg = 0; seg < part_num;seg++){
-                    for(unsigned sid = seg * seg_size; sid < std::min((seg + 1) * seg_size, (unsigned)small_vertex.size());sid++){
-                        if(parts[seg].size() < params::partition_size)
-                            parts[seg].push_back(small_vertex[sid]);
-                        else
-                            parts[part_num - 1].push_back(small_vertex[sid]);
-                    }
-                }
-            }
-            else{
-                seg_size = large_vertex.size();
-                for(unsigned sid = 0;sid < seg_size;sid++){
-                    parts[0].push_back(large_vertex[sid]);
-                }
-                seg_size = small_vertex.size();
-                for(unsigned sid = 0;sid < seg_size;sid++){
-                    parts[0].push_back(small_vertex[sid]);
-                }
-            }
-            unsigned p = 0;
-            for(p = 0; p < part_num;p++){
-                for(unsigned k = 0; k < parts[p].size();k++)
-                    mapping.push_back(parts[p][k]);
-            }
-        }
-        std::cout << "----------" << std::endl;
-        printf("Partition finished!\n");
-        for(unsigned i = 0;i < mapping.size();i++){
-            new_id[mapping[i].id] = i;
-        }
-        
-        printf("[!!]Reorder finished\n");
-        std::cout << "==========" << std::endl;
-
-    }
-
-    // [*] main hisorder algorithm (for push-only mode)
-    void HisOrder() {
-        std::vector<Node> nodes(num_vertex); 
-        #pragma omp parallel for
-        for(unsigned i = 0;i < num_vertex;i++){
-            nodes[i].feat = graph->attr[i];
-            nodes[i].id = i;
-            nodes[i].cluster_id = -1;
-        }
-        std::vector<Node> centroids; 
-        unsigned num_clusters = this->graph->cluster_num;
-        std::vector<std::vector<Node>> clusters(num_clusters); 
-
-        int first_center_id = rand() % nodes.size();
-        centroids.push_back(nodes[first_center_id]);
-        for(unsigned i = 1; i < num_clusters;i++){
-            unsigned total_distance_sq = 0;
-            std::vector<unsigned> distances(nodes.size(), std::numeric_limits<unsigned>::max());
-            
-            #pragma omp parallel for
-            for(unsigned j = 0; j < nodes.size();j++){
-                for(Node& centroid : centroids){
-                    unsigned distance = centroid.calculate_diff_kmp(nodes[j]);
-                    distances[j] = std::min(distances[j], distance);
-                }
-                unsigned sq = distances[j] * distances[j];
-                #pragma omp atomic
-                    total_distance_sq += sq;
-            }
-            double randValue = std::rand() / (RAND_MAX + 1.0) * total_distance_sq;
-            for(unsigned j = 0; j < num_vertex;j++){
-                randValue -= distances[j] * distances[j];
-                if(randValue <= 0){
-                    centroids.push_back(nodes[j]);
-                    break;
-                }
-            }
-        }
+        // printf("centroid init ok\n");
         /*
         for(unsigned i = 0;i < centroids.size();i++){
             // printf("Center(%d): ", i);
@@ -489,6 +182,7 @@ public:
         double cond = 0.08;
         double converge_rate = 0.1;
         while (iter < KMEANS_ITER) {
+            printf("K-means iter(%d)\n", iter);
             for (auto& cluster : clusters) 
                 cluster.clear();
             #pragma omp parallel for
@@ -533,15 +227,14 @@ public:
                 }
             }
             iter++;
-            printf("kmeans iter(%d)\n", iter);
             if(num_not_converged < converge_rate * num_clusters){
                 // std::cout << "num not converged = " << num_not_converged << std::endl;
                 break;
             }
         }
-        printf("K-means (K = %d) results: \n", num_clusters);
-        for (unsigned i = 0;i < clusters.size();i++) 
-            printf("  cluster(%d) size = %d\n", i, clusters[i].size());
+        // printf("K-means (K = %d) results: \n", num_clusters);
+        // for (unsigned i = 0;i < clusters.size();i++) 
+        //     printf("  cluster(%d) size = %d\n", i, clusters[i].size());
         std::vector<std::vector<Node>> parts(num_partitions);
         const auto average_degree = num_edges / num_vertex;
         int p_id = 0;
@@ -586,12 +279,12 @@ public:
                 }
             }
         }
-        std::cout << "----------" << std::endl;
+        // std::cout << "----------" << std::endl;
         /*
         for(unsigned i = 0;i < num_partitions;i++){
             printf("Part(%u): size = %d\n", i, parts[i].size());
         }*/
-        printf("Partition finished!\n");
+        // printf("Partition finished!\n");
         unsigned int new_cnt = 0;
         for(unsigned pid = 0; pid < parts.size();pid++){
             for(unsigned nid = 0; nid < parts[pid].size(); nid++){
@@ -601,25 +294,9 @@ public:
             }
         }
         //exit(1);
-        std::cout << "----------" << std::endl;
-        printf("[!!]Reorder finished\n");
-        std::cout << "==========" << std::endl;
-    }
-
-    /* Random */
-    void fastRandom() {        
-        std::vector<unsigned> index(num_vertex);
-        #pragma omp parallel for
-        for(unsigned i = 0; i < num_vertex; i++)
-            index[i] = i; 
-
-        auto rng = std::default_random_engine {};
-        std::shuffle(std::begin(index), std::end(index), rng);
-
-        #pragma omp parallel for
-        for(unsigned i = 0; i < num_vertex; i++)
-            new_id[index[i]] = i;  
-
+        // std::cout << "----------" << std::endl;
+        // printf("[!!]Reorder finished\n");
+        // std::cout << "==========" << std::endl;
     }
 
     /* Sorting by Degree */
@@ -905,6 +582,55 @@ public:
         }
     }
 
+    void Corder() { 
+        unsigned max_threads = omp_get_max_threads();
+        std::vector<unsigned> segment_large;
+        segment_large.reserve(num_vertex);
+        std::vector<unsigned> segment_small;
+        segment_small.reserve(num_vertex/2);
+        for(unsigned i = 0; i < num_vertex; i++)
+            if(graph->out_degree[i] > 1 * average_degree)
+                segment_large.push_back(i);
+            else
+                segment_small.push_back(i);
+        
+        unsigned num_large_per_seg = ceil((float) segment_large.size() / num_partitions);
+        params::overflow_ceil = num_large_per_seg;
+
+        unsigned num_small_per_seg = params::partition_size - num_large_per_seg;
+
+        std::cout << "partition size: " << params::partition_size  << " num of large: " << num_large_per_seg << " num of small: " << num_small_per_seg << '\n';
+        unsigned last_cls = num_partitions - 1;
+
+        while( (num_large_per_seg * last_cls > segment_large.size()) ||
+                (num_small_per_seg * last_cls > segment_small.size())) 
+        {
+            last_cls -= 1;
+        }
+            
+        #pragma omp parallel for schedule(static) num_threads(max_threads)
+        for(unsigned i = 0; i < last_cls; i++) {
+            unsigned index = i * params::partition_size;
+            for(unsigned j = 0; j < num_large_per_seg; j++) {
+                new_id[segment_large[i * num_large_per_seg + j]] = index++;
+            }
+            for(unsigned j = 0; j < num_small_per_seg; j++)
+                new_id[segment_small[i * num_small_per_seg + j]] = index++;
+        }
+
+        auto last_large = num_large_per_seg * last_cls;
+        auto last_small = num_small_per_seg * last_cls;
+        unsigned index = last_cls * params::partition_size;
+
+        for(unsigned i = last_large; i < segment_large.size(); i++) {
+            new_id[segment_large[i]] = index++;
+        }
+        for(unsigned i = last_small; i < segment_small.size(); i++) {
+            new_id[segment_small[i]] = index++;
+        }
+    }
+    
+
     // mapping graph reorder
     void mapReorder(std::string mapping_file) {
         std::ifstream ifs(mapping_file.c_str(), std::ifstream::in);
@@ -982,41 +708,29 @@ public:
 
     void reorder(Algo algo){
         switch(algo) {
-            case Algo::hisorder_wo_blc:
-                std::cout << "[!!] reordering method: [ Hisorder without balance ]" << '\n';
-                HisOrder_wo_blc();
-                break;
             case Algo::hisorder:
-                std::cout << "[!!] reordering method: [ HisOrder + balance ]" << '\n';
-                HisOrder();
-                break;
-            case Algo::hisorder_pcpm:
-                std::cout << "[!!] Reordering method: [ HisOrder for pcpm ]" << std::endl;
-                HisOrder_PCPM();
-                break;
-            case Algo::randm:
-                std::cout << "reordering method: random" << '\n';
-                fastRandom();
+                std::cout << "reordering = FrontOrder" << '\n';
+                FrontOrder();
                 break;
             case Algo::sort:
-                std::cout << "reordering method: sort" << '\n';
+                std::cout << "reordering = sort" << '\n';
                 fastSort();
                 break;
             case Algo::fbc:
-                std::cout << "reordering method: fbc" << '\n';
+                std::cout << "reordering = fbc" << '\n';
                 fastFBC();
                 break;
             case Algo::hc:
-                std::cout << "reordering method: hc" << '\n';
+                std::cout << "reordering = hc" << '\n';
                 fastHC();
                 break;
             case Algo::dbg:
-                std::cout << "reordering method: dbg" << '\n';
+                std::cout << "reordering = dbg" << '\n';
                 fastDBG(8);
                 break;
             case Algo::corder:
-                std::cout << "reordering method: corder" << '\n';
-                fastCorder();
+                std::cout << "reordering = corder" << '\n';
+                Corder();
                 break;
             case Algo::map:
                 std::cout << "reorder according to mapping file (rabbit and gorder)" << '\n';

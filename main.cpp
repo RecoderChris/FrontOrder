@@ -1,8 +1,3 @@
-/**
- *
- * This code implements work optimized propagation blocking with
- * transposed bin graph to reduce cache misses in scatter
- */
 #include <pthread.h>
 #include <time.h>
 #include "graph.hpp"
@@ -20,13 +15,12 @@ using namespace boost::program_options;
 #define TEST
 #undef TEST
 
-// 函数用于根据文件名获取文件后缀
 std::string getFileExtension(const std::string& fileName) {
     size_t dotPos = fileName.find_last_of(".");
     if (dotPos != std::string::npos && dotPos < fileName.length() - 1) {
         return fileName.substr(dotPos + 1);
     }
-    return ""; // 若未找到后缀，返回空字符�?
+    return ""; 
 }
 
 //////////////////////////////////////////
@@ -36,15 +30,13 @@ int main(int argc, char** argv)
 {
     options_description desc{"Options"};
     desc.add_options()
-        ("data,d", value<string>()->default_value(""), "input data path")
-        ("output,o", value<string>()->default_value(""), "output file path")
-        ("out_reorder,r", value<string>()->default_value(""), "reorder file path")
-        ("size,s", value<int>()->default_value(512), "partition size")
-        ("algorithm,a", value<int>()->default_value(0), "reordering algorithm")
-        ("thread,t", value<int>()->default_value(20), "threads")
-        ("feat,f", value<int>()->default_value(10), "Input feat len")
-        ("kv,k", value<int>()->default_value(16), "Input K value for kmeans")
-        ("in_feat,i", value<string>()->default_value(""), "input feature file path");
+        ("data,d", value<string>()->default_value(""), "input_graph")
+        ("in_feat,i", value<string>()->default_value(""), "input_feat")
+        ("output,o", value<string>()->default_value(""), "output_graph")
+        ("out_reorder,r", value<string>()->default_value(""), "output_vtx_map")
+        ("size,s", value<int>()->default_value(512), "part_size")
+        ("algorithm,a", value<int>()->default_value(0), "reorder_ID")
+        ("kv,k", value<int>()->default_value(16), "K value");
 
 
     variables_map vm;
@@ -64,9 +56,9 @@ int main(int argc, char** argv)
 
     int size = vm["size"].as<int>();
     int reorder = vm["algorithm"].as<int>();
-    int feat = vm["feat"].as<int>();
+    int feat = 15;
     int kv = vm["kv"].as<int>();
-    params::num_threads = vm["thread"].as<int>();
+    params::num_threads = omp_get_max_threads() / 2;
 
     if (data_file.empty()) {
         cout << desc << '\n';
@@ -83,13 +75,13 @@ int main(int argc, char** argv)
     /**************************************************
      Compute the preprocessing time
      *************************************************/
-    cpu_timer timer;
+    // cpu_timer timer;
     cpu_times times;
 
     graph.cluster_num = kv;
     if(parseGraph(data_file, graph)) {
-        times = timer.elapsed();
-        cout << times.wall/(1e9) << "s: parse done for " << data_file << '\n';
+        // times = timer.elapsed();
+        // cout << times.wall/(1e9) << "s: parse done for " << data_file << '\n';
         graph.printGraph();
     }
     
@@ -112,14 +104,14 @@ int main(int argc, char** argv)
     //////////////////////////////////////////
   //  writeEdgelist("edgelist.txt", graph);
     params::num_partitions = (graph.num_vertex-1)/params::partition_size + 1;
-
-    cout << "number of partitions used for reordering: " << params::num_partitions << '\n';
+    printf("[Graph Info]\n");
+    std::cout << "num vertex: " << graph.num_vertex << ", num edges: " << graph.num_edges << ", num partitions: " << params::num_partitions << '\n';
     //////////////////////////////////////////
     // output Degree array
     //////////////////////////////////////////
     graph.computeOutDegree();
-    times = timer.elapsed();
-    cout << times.wall/(1e9) << "s: outdegree is computed "  << '\n';
+    // times = timer.elapsed();
+    // cout << times.wall/(1e9) << "s: outdegree is computed "  << '\n';
 
 
     if(feat_file != "" && !feat_file.empty()){
@@ -137,10 +129,10 @@ int main(int argc, char** argv)
     float order_time = 0.0;
 
     orderer.reorder(algo);
-    cout << "reordering time is: "  << reorder_timer.elapsed().wall/(1e9) << '\n';
+    cout << "reordering latency = "  << reorder_timer.elapsed().wall/(1e9) << '\n';
 
     orderer.getNewGraph(algo);
-    cout << times.wall/(1e9) << "s: a new graph is constructed, total time is: "  << reorder_timer.elapsed().wall/(1e9) << '\n';
+    // cout << times.wall/(1e9) << "s: a new graph is constructed, total time is: "  << reorder_timer.elapsed().wall/(1e9) << '\n';
     
     if(if_out_reorder){
         writeReorder(reorder_file, orderer, graph.num_edges, algo);

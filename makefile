@@ -5,14 +5,14 @@ LDFLAGS = -fopenmp -m64 -lpthread  -lboost_timer -lboost_system -lboost_program_
 SOURCES = main.cpp 
 OBJECTS = $(SOURCES:.cpp=.o)
 
-all: $(SOURCES) hisorder
+all: $(SOURCES) frontorder
 
-hisorder : $(OBJECTS)  
+frontorder : $(OBJECTS)  
 	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
 
 .cpp.o : 
 	$(CC) $(CPPFLAGS) $(OMP) $< -o $@
 
 clean:
-	rm -f *.o hisorder dump*
+	rm -f *.o frontorder dump*
 

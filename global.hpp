@@ -15,14 +15,11 @@ namespace params {
 
 
 enum Algo {
-    hisorder_wo_blc = 0,
-    hisorder = 1, 
-    hisorder_pcpm = 2, 
-    randm = 3, 
-    sort = 4, 
-    fbc = 5, 
-    hc = 6, 
-    dbg = 7, 
-    corder = 8, 
-    map = 9, 
+    hisorder = 0, 
+    sort = 1, 
+    fbc = 2, 
+    hc = 3, 
+    dbg = 4, 
+    corder = 5, 
+    map = 6, 
 };

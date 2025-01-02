@@ -35,6 +35,7 @@ hisorder
 
 # directories
 dataset/*
+ext_data/*
 feature/*
 .vscode/*
 

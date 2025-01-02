@@ -8,7 +8,7 @@ ALGO=("FO" "SO" "FBC" "HC" "DBG" "CO")
 dataset=("MPI" "TW" "KR") #  "DL"
 BFS_STARTER=("16580161" "13243450" "18569402") # "6557208" 
 SSSP_STARTER=("5655958" "13886266" "31631843") # "15620566"
-ROUNDS=5
+ROUNDS=10
 
 for index in "${!dataset[@]}"
 do 

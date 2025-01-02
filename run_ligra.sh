@@ -8,7 +8,7 @@ ALGO=("FO" "SO" "FBC" "HC" "DBG" "CO")
 dataset=("MPI" "TW" "KR") #   "DL"
 BFS_STARTER=("16580161" "13243450" "18569402") # "6557208"
 SSSP_STARTER=("5655958" "13886266" "31631843") # "15620566"
-ROUNDS=5
+ROUNDS=10
 
 for index in "${!dataset[@]}"
 do 
@@ -27,9 +27,9 @@ do
     fi
     
     for APP in BFS BellmanFord Components PageRankDelta; do 
-        # cd ${APP_ROOT} || exit
-        # make clean
-        # make -j
+        cd ${APP_ROOT} || exit
+        make clean
+        make -j
         echo "-----"
         echo "APP: ${APP}"
         APP_LOG=${DATA_LOG_DIR}/${APP}
@@ -53,7 +53,7 @@ do
             LOG_FILE=${APP_LOG}/${ALGO}.log
             if [ "${ALGO}" == "OG" ]; then
                 ${APP_ROOT}/${APP}  -rounds ${ROUNDS} ${START_VERTEX_OPT} \
-                 ${ITER_OPT} ${DATA_DIR}/${DATA}.csr > ${LOG_FILE}
+                ${ITER_OPT} ${DATA_DIR}/${DATA}.csr > ${LOG_FILE}
                 continue
             fi
             REORDER_FILE=${REORDER_DIR}/${DATA}-${ALGO}.reorder

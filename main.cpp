@@ -116,7 +116,8 @@ int main(int argc, char** argv)
 
     if(feat_file != "" && !feat_file.empty()){
         graph.in_feat = feat_file;
-        graph.initAttributeFile(feat_file, feat);
+        if(reorder != Algo::map)
+            graph.initAttributeFile(feat_file, feat);
     }
     // TODO: add a logic to handle missing feature file
     Orderer orderer(&graph);

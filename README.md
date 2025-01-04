@@ -170,7 +170,4 @@ As we can see, FrontOrder could improve the graph processing efficiency on diffe
 
 Please refer to our paper to see the more details about the evaluation. 
 
-## Future Work
-1. Customize graph partition for heterogeneous computing architecture (On-going)
 
-2. XXX

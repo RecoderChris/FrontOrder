@@ -6,7 +6,7 @@ cd tools/gen_el || exit
 make clean && make
 
 ROOT=../../dataset
-for DATA in KR TW TF; do # KR TW TF
+for DATA in MPI KR TW ; do # 
     DATA_DIR=${ROOT}/${DATA}
     echo "========="
     echo "Dataset : ${DATA}"

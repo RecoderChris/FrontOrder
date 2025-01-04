@@ -125,7 +125,6 @@ int main(int argc, char** argv)
     ///////////////////////////////
     // re-order the graph 
     //////////////////////////////
-    std::cout << "==========" << std::endl;
     cpu_timer reorder_timer;
     float order_time = 0.0;
 

@@ -97,6 +97,7 @@ int main(int argc, char** argv)
 
     struct timespec start, end;
     float time;
+    float T = 0;
 
     int ctr =0;
     while(ctr < G.rounds)
@@ -121,7 +122,9 @@ int main(int argc, char** argv)
         time = (end.tv_sec - start.tv_sec)+ (int)(end.tv_nsec - start.tv_nsec)/1e9;
         printf("pr_dense, %d, %s, %lf\n",NUM_THREADS, argv[1], time);
         ctr++;
+        T += time; 
     }
+    printf("Avg time = %lf\n", T / G.rounds);
     printf("\n");
 
     return 0;

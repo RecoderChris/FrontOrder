@@ -50,10 +50,6 @@ extern intV NUM_BINS;
 //////// pre-processing functions ////////
 //////////////////////////////////////////
 
-/* 初始化part数据结构，主要包�?:
-*  - 对graph数据结构中活跃scatter分块列表、活跃gather分块列表和待处理数量初始�?
-*  - 对part数据结构中的始末节点id/活跃节点信息/边数和活跃边�?/对应的bin活跃状态等初始�?
-*  - 对part数据结构中DENSE模式和分块内异步处理的数据结构初始化为空 */
 template<class graph>
 void partition(partitionData* TD, graph* G)
 {

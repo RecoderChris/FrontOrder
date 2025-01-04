@@ -299,6 +299,120 @@ public:
         // std::cout << "==========" << std::endl;
     }
 
+    void FON() {
+        std::vector<Node> nodes(num_vertex); 
+        #pragma omp parallel for
+        for(unsigned i = 0;i < num_vertex;i++){
+            nodes[i].feat = graph->attr[i];
+            nodes[i].id = i;
+            nodes[i].cluster_id = -1;
+        }
+        std::vector<Node> centroids; 
+        unsigned num_clusters = this->graph->cluster_num;
+        std::vector<std::vector<Node>> clusters(num_clusters); 
+
+        int first_center_id = rand() % nodes.size();
+        centroids.push_back(nodes[first_center_id]);
+        for(unsigned i = 1; i < num_clusters;i++){
+            unsigned total_distance_sq = 0;
+            std::vector<unsigned> distances(nodes.size(), std::numeric_limits<unsigned>::max());
+            #pragma omp parallel for
+            for(unsigned j = 0; j < nodes.size();j++){
+                for(Node& centroid : centroids){
+                    unsigned distance = centroid.calculate_diff_kmp(nodes[j]);
+                    distances[j] = std::min(distances[j], distance);
+                }
+                unsigned sq = distances[j] * distances[j];
+                #pragma omp atomic
+                    total_distance_sq += sq;
+            }
+            double randValue = std::rand() / (RAND_MAX + 1.0) * total_distance_sq;
+            for(unsigned j = 0; j < num_vertex;j++){
+                randValue -= distances[j] * distances[j];
+                if(randValue <= 0){
+                    centroids.push_back(nodes[j]);
+                    break;
+                }
+            }
+        }
+        for(unsigned i = 0;i < centroids.size() - 1;i++){
+            Node n = centroids[i];
+            unsigned k = 0;
+            unsigned dis = std::numeric_limits<unsigned>::max();
+            for(unsigned j = i + 1;j < centroids.size();j++){
+                unsigned tmp_dis = n.calculate_diff_kmp(centroids[j]);
+                if(tmp_dis < dis){
+                    dis = tmp_dis;
+                    k = j;
+                }
+            }
+            std::swap(centroids[i + 1], centroids[k]);
+        }
+        unsigned int iter = 0;
+        double cond = 0.08;
+        double converge_rate = 0.1;
+        while (iter < KMEANS_ITER) {
+            for (auto& cluster : clusters) 
+                cluster.clear();
+            #pragma omp parallel for
+            for (unsigned i = 0;i < nodes.size();i++) {
+                unsigned min_diff = std::numeric_limits<unsigned>::max();
+                int closestCentroid = -1;
+                for (int j = 0; j < centroids.size(); j++) {
+                    unsigned diff = nodes[i].calculate_diff(centroids[j]);
+                    if (diff < min_diff) { 
+                        min_diff = diff;
+                        closestCentroid = j;
+                    }
+                }
+                assert(closestCentroid != -1);
+                nodes[i].cluster_id = closestCentroid;
+            }
+            #pragma omp parallel for
+            for(unsigned i = 0; i < centroids.size();i++){
+                for(unsigned nodeId = 0; nodeId < nodes.size(); nodeId++){
+                    if(nodes[nodeId].cluster_id == i)
+                        clusters[i].push_back(nodes[nodeId]);
+                }
+            }
+            unsigned num_not_converged = 0;
+            #pragma omp parallel for
+            for (size_t i = 0; i < centroids.size(); ++i) {
+                if (!clusters[i].empty()) {
+                    unsigned dim = centroids[i].feat.size();
+                    std::vector<unsigned> newCentroid(dim, 0);
+                    for (size_t j = 0; j < dim; ++j){
+                        for (const auto& node : clusters[i])
+                            newCentroid[j] += node.feat[j];
+                        double result = static_cast<double>(newCentroid[j]) / clusters[i].size();
+                        newCentroid[j] =  static_cast<int>(std::round(result));
+                    }
+                    unsigned dis = centroids[i].calculate_diff_vec(newCentroid);
+                    if(dis >= 1){
+                        #pragma omp atomic
+                            num_not_converged++;
+                    }
+                    centroids[i].feat = newCentroid;
+                }
+            }
+            iter++;
+            if(num_not_converged < converge_rate * num_clusters){
+                // std::cout << "num not converged = " << num_not_converged << std::endl;
+                break;
+            }
+        }
+        int total_num = 0;
+        int new_cnt = 0;
+        for(unsigned cid = 0; cid < clusters.size();cid++){
+            total_num += clusters[cid].size();
+            for(unsigned nid = 0; nid < clusters[cid].size(); nid++){
+                unsigned int old_id = clusters[cid][nid].id;
+                new_id[old_id] = new_cnt;
+                new_cnt++;
+            }
+        }
+    }
+
     /* Sorting by Degree */
     void fastSort() {
         std::vector<unsigned>& out_degree = graph->out_degree;
@@ -629,7 +743,6 @@ public:
             new_id[segment_small[i]] = index++;
         }
     }
-    
 
     // mapping graph reorder
     void mapReorder(std::string mapping_file) {
@@ -735,6 +848,9 @@ public:
             case Algo::map:
                 std::cout << "reorder according to mapping file (rabbit and gorder)" << '\n';
                 mapReorder(this->graph->in_feat);
+                break;
+            case Algo::fon:
+                FON();
                 break;
             default:
                 std::cout << "choose a correct algorithm!" << '\n';

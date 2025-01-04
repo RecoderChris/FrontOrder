@@ -160,6 +160,7 @@ void initialize(graph* G, int argc, char** argv)
     }
 
     NUM_THREADS = omp_get_max_threads() / 2;
+    printf("num threads = %d\n", NUM_THREADS);
     omp_set_num_threads(NUM_THREADS);
 
     //////////////////////////////////////////

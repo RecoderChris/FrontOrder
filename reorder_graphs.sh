@@ -1,10 +1,9 @@
 #!/bin/bash
-
 PART_SIZE=512
-FEAT_SIZE=15
-
-ALGO=("FO" "SO" "FBC" "HC" "DBG" "CO")
-
+FEAT_SIZE=10
+ALGO=("FO" "FON" "SO" "FBC" "HC" "DBG" "CO") # 
+make clean
+make
 for DATA in MPI TW KR;do 
     DATA_ROOT="dataset"
     DATA_DIR=${DATA_ROOT}/${DATA}
@@ -24,15 +23,14 @@ for DATA in MPI TW KR;do
     if [ ! -d "$REORDER_DIR"  ];then
         mkdir -p ${REORDER_DIR}
     fi
-    
     for index in "${!ALGO[@]}"
     do
         echo "algo = ${ALGO[index]}"
         REORDER_ALGO="${ALGO[index]}"
         REORDER_FILE=${REORDER_DIR}/${DATA}-${REORDER_ALGO}.reorder
         CSR_FILE=${DATA_DIR}/${DATA}-${REORDER_ALGO}.csr
-        if [ -f "$REORDER_FILE" ];then
-            rm ${REORDER_FILE}
+        if [ -f "$CSR_FILE" ];then
+            rm ${CSR_FILE}
         fi
         ./frontorder -d ${DATA_DIR}/${DATA}.csr -a ${index} \
         -s ${PART_SIZE} -o ${CSR_FILE} -r $REORDER_FILE \
@@ -67,8 +65,8 @@ for DATA in DL FR RM;do
         REORDER_ALGO="${ALGO[index]}"
         REORDER_FILE=${REORDER_DIR}/${DATA}-${REORDER_ALGO}.reorder
         CSR_FILE=${DATA_DIR}/${DATA}-${REORDER_ALGO}.csr
-        if [ -f "$REORDER_FILE" ];then
-            rm ${REORDER_FILE}
+        if [ -f "$CSR_FILE" ];then
+            rm ${CSR_FILE}
         fi
         ./frontorder -d ${DATA_DIR}/${DATA}.csr -a ${index} \
         -s ${PART_SIZE} -o ${CSR_FILE} -r $REORDER_FILE \

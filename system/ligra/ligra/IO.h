@@ -261,8 +261,6 @@ graph<vertex> readGraphFromFile(char* fname, bool isSymmetric, bool mmap) {
     v[i].setOutNeighbors(edges+2*o);
 #endif
     }}
-  std::cout << "  图中含有的节点数: " << n << std::endl;
-  std::cout << "  图中含有的边数: " << m << std::endl;
   std::cout << "[row]: first offset = " << offsets[0] << ", last offset = "<<offsets[n-1]<<std::endl;
   std::cout << "[col]: first offset = " << edges[0] << ", last offset = " << edges[m-1]<<std::endl;
   std::cout << "whole graph read ok" << std::endl;
@@ -351,10 +349,9 @@ graph<vertex> readGraphFromFile(char* fname, bool isSymmetric, bool mmap) {
 
 template <class vertex>
 graph<vertex> readGraphFromFileGPOP(char* fname, bool isSymmetric, bool mmap) {
-  // 读取节点数量、边数量VI和EI
   long n;
   long m;
-  std::cout << "读取原始图的csr文件" << std::endl;
+  std::cout << "read from csr" << std::endl;
   FILE* graphFile = fopen(fname, "rb");
   if (graphFile == NULL)
   {
@@ -365,11 +362,11 @@ graph<vertex> readGraphFromFileGPOP(char* fname, bool isSymmetric, bool mmap) {
   size_t byte_read;
   byte_read = fread (&n_temp, sizeof(unsigned int), 1, graphFile);
   n = (long)n_temp;
-  std::cout << "  图中含有的节点数: " << n << std::endl;
+  std::cout << "  vertex num = " << n << std::endl;
   
   byte_read = fread (&m_temp, sizeof(unsigned int), 1, graphFile);
   m = (long)m_temp;
-  std::cout << "  图中含有的边数: " << m << std::endl;
+  std::cout << "  edge num = " << m << std::endl;
   
   uintT* offsets = newA(uintT,n);
   byte_read = fread (offsets, sizeof(uintT), n, graphFile);

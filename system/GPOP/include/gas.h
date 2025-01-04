@@ -86,10 +86,6 @@ void loadFrontier(graph* G, intV* initFrontier, intV initFrontierSize)
     G->frontierSize = initFrontierSize;
 }
 
-/* 初始化图中的活跃节点信息
- * - 初始化全局活跃节点
- * - 初始化每个分块对应的活跃节点、活跃边数 
- * - 初始化分块的活跃情况和需要scatter的活跃块集合 */
 template<class graph>
 void loadFrontierPar(graph* G, intV* initFrontier, intV initFrontierSize)
 {

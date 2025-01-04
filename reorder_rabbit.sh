@@ -1,15 +1,17 @@
 #!/bin/bash
-
+ROOT_DIR=$(pwd)
 cd baseline/rabbit/demo
 make clean
 make -j
-cd ../../.. || exit
+cd ${ROOT_DIR} || exit
+make clean
+make
 
 DATA_ROOT=dataset
 EXT_DATA_ROOT=ext_data
 RBT_ROOT=baseline/rabbit/demo
 
-for DATA in KR TF TW; do 
+for DATA in KR MPI TW; do 
     DATA_DIR=${DATA_ROOT}/${DATA}
     REORDER_DIR=${DATA_DIR}/reorder
     echo "=========="
@@ -25,9 +27,7 @@ for DATA in KR TF TW; do
     ${RBT_ROOT}/reorder ${DATA_DIR}/${DATA}.el >> ${REORDER_FILE}
 
     CSR_FILE=${DATA_DIR}/${DATA}-RBT.csr
-    make clean
-    make
-    ./frontorder -d ${DATA_DIR}/${DATA}.csr -a 6 -o ${CSR_FILE} -i ${REORDER_FILE}
+    ./frontorder -d ${DATA_DIR}/${DATA}.csr -a 7 -o ${CSR_FILE} -i ${REORDER_FILE}
 done
 
 for DATA in DL FR RM; do 
@@ -45,7 +45,5 @@ for DATA in DL FR RM; do
     
     ${RBT_ROOT}/reorder ${DATA_DIR}/${DATA}.el >> ${REORDER_FILE}
     CSR_FILE=${DATA_DIR}/${DATA}-RBT.csr
-    make clean
-    make
-    ./frontorder -d ${DATA_DIR}/${DATA}.csr -a 6 -o ${CSR_FILE} -i ${REORDER_FILE}
+    ./frontorder -d ${DATA_DIR}/${DATA}.csr -a 7 -o ${CSR_FILE} -i ${REORDER_FILE}
 done
